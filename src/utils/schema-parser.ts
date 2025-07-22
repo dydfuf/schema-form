@@ -5,7 +5,7 @@ import { ZodTypeName, ParsedField } from "../types";
  * Get the Zod type name from a schema
  */
 export function getZodTypeName(schema: z.ZodTypeAny): ZodTypeName {
-  return schema._def.typeName as ZodTypeName;
+  return (schema._def as any).typeName as ZodTypeName;
 }
 
 /**
@@ -33,6 +33,19 @@ export function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
 }
 
 /**
+ * Get meta information from a Zod schema
+ */
+export function getSchemaMeta(
+  schema: z.ZodTypeAny
+): Record<string, any> | undefined {
+  // Check if the schema has meta information
+  if ("_def" in schema && "meta" in schema._def) {
+    return (schema._def as any).meta;
+  }
+  return undefined;
+}
+
+/**
  * Get enum options from ZodEnum or ZodNativeEnum
  */
 export function getEnumOptions(
@@ -50,11 +63,11 @@ export function getEnumOptions(
   }
 
   if (typeName === "ZodNativeEnum") {
-    const nativeEnumSchema = unwrapped as z.ZodNativeEnum<any>;
+    const nativeEnumSchema = unwrapped as any;
     const enumObject = nativeEnumSchema._def.values;
     return Object.entries(enumObject).map(([key, value]) => ({
       label: key,
-      value,
+      value: value as string | number,
     }));
   }
 
@@ -73,6 +86,7 @@ export function parseSchema(
   const typeName = getZodTypeName(unwrapped);
   const required = isFieldRequired(schema);
   const fieldPath = parentPath ? `${parentPath}.${name}` : name;
+  const meta = getSchemaMeta(schema);
 
   switch (typeName) {
     case "ZodObject": {
@@ -93,6 +107,7 @@ export function parseSchema(
             schema,
             required,
             nested: nestedFields,
+            meta,
           },
         ];
       } else {
@@ -115,6 +130,7 @@ export function parseSchema(
           schema,
           required,
           nested: elementFields,
+          meta,
         },
       ];
     }
@@ -130,6 +146,7 @@ export function parseSchema(
           type: typeName,
           schema,
           required,
+          meta,
         },
       ];
     }
@@ -144,6 +161,7 @@ export function parseSchema(
           schema,
           required,
           options,
+          meta,
         },
       ];
     }
@@ -170,6 +188,7 @@ export function parseSchema(
             schema,
             required,
             options: unionOptions,
+            meta,
           },
         ];
       }
@@ -181,6 +200,7 @@ export function parseSchema(
           type: "ZodString",
           schema,
           required,
+          meta,
         },
       ];
     }
@@ -193,6 +213,7 @@ export function parseSchema(
           type: "ZodString",
           schema,
           required,
+          meta,
         },
       ];
     }

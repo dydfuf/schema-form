@@ -10,7 +10,8 @@ export function StringField({
   description,
   className,
   error,
-}: FieldComponentProps) {
+  ...additionalProps
+}: FieldComponentProps & Record<string, any>) {
   const { register } = form;
   const unwrapped = unwrapSchema(schema);
 
@@ -20,16 +21,28 @@ export function StringField({
       (check: any) => check.kind === "min" && check.value > 100
     ) || false;
 
+  // Extract meta props
+  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
+  const { as, type = "text", rows, ...restMetaProps } = metaProps;
+
+  // Determine if it should be a textarea
+  const shouldBeTextarea = as === "textarea" || isTextarea;
+
   const inputProps = {
     ...register(name),
     placeholder,
-    className: `
+    type: shouldBeTextarea ? undefined : type,
+    rows: shouldBeTextarea ? rows || 4 : undefined,
+    className:
+      className ||
+      `
       w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
       disabled:bg-gray-50 disabled:text-gray-500
       ${error ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}
-      ${className || ""}
     `.trim(),
+    ...restMetaProps,
+    ...otherAdditionalProps,
   };
 
   return (
@@ -43,10 +56,10 @@ export function StringField({
         </label>
       )}
 
-      {isTextarea ? (
-        <textarea id={name} rows={4} {...inputProps} />
+      {shouldBeTextarea ? (
+        <textarea id={name} {...inputProps} />
       ) : (
-        <input id={name} type="text" {...inputProps} />
+        <input id={name} {...inputProps} />
       )}
 
       {description && <p className="text-sm text-gray-500">{description}</p>}

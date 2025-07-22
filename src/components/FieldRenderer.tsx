@@ -1,5 +1,5 @@
 import { FieldComponentProps, FieldRendererMap } from "../types";
-import { getFieldType } from "../utils/schema-parser";
+import { getFieldType, getSchemaMeta } from "../utils/schema-parser";
 import {
   StringField,
   NumberField,
@@ -31,8 +31,23 @@ export function FieldRenderer({
 }: FieldRendererProps) {
   const fieldType = getFieldType(schema);
   const renderers = { ...defaultFieldRenderers, ...customRenderers };
+  const meta = getSchemaMeta(schema);
 
   const FieldComponent = renderers[fieldType] || renderers.string;
 
-  return <FieldComponent schema={schema} {...fieldProps} />;
+  // Merge meta props with field props
+  const enhancedProps = {
+    ...fieldProps,
+    ...(meta && {
+      placeholder: meta.placeholder || fieldProps.placeholder,
+      className: meta.className || fieldProps.className,
+      description: meta.description || fieldProps.description,
+      label: meta.label || fieldProps.label,
+      disabled:
+        meta.disabled !== undefined ? meta.disabled : fieldProps.disabled,
+      ...meta.props, // Allow any additional props from meta
+    }),
+  };
+
+  return <FieldComponent schema={schema} {...enhancedProps} />;
 }

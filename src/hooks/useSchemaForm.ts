@@ -50,7 +50,7 @@ export function useSchemaForm<T extends ZodSchema>({
 
   // Initialize react-hook-form with zodResolver
   const form = useForm<InferredType<T>>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any) as any,
     defaultValues: computedDefaultValues as any,
     ...formOptions,
   });
@@ -83,7 +83,7 @@ export function useSchemaForm<T extends ZodSchema>({
   }, [errors]);
 
   return {
-    form,
+    form: form as UseFormReturn<InferredType<T>>,
     schema,
     isSubmitting,
     isValid,
@@ -100,7 +100,7 @@ export function useSchemaFormSubmit<T extends ZodSchema>(
 ) {
   return form.handleSubmit(async (data) => {
     try {
-      await onSubmit(data);
+      await onSubmit(data as InferredType<T>);
     } catch (error) {
       console.error("Form submission error:", error);
       // You can add custom error handling here

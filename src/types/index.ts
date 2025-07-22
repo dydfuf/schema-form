@@ -4,7 +4,9 @@ import { ReactNode, ComponentType } from "react";
 
 // Zod schema types
 export type ZodSchema = z.ZodTypeAny;
-export type InferredType<T extends ZodSchema> = z.infer<T>;
+export type InferredType<T extends ZodSchema> = z.infer<T> extends FieldValues
+  ? z.infer<T>
+  : FieldValues;
 
 // Field component props
 export interface BaseFieldProps<T extends FieldValues = FieldValues> {
@@ -20,7 +22,7 @@ export interface BaseFieldProps<T extends FieldValues = FieldValues> {
 
 export interface FieldComponentProps<T extends FieldValues = FieldValues>
   extends BaseFieldProps<T> {
-  form: UseFormReturn<T>;
+  form: UseFormReturn<FieldValues>;
   schema: ZodSchema;
 }
 
@@ -121,4 +123,5 @@ export interface ParsedField {
   description?: string;
   options?: Array<{ label: string; value: any }>;
   nested?: ParsedField[];
+  meta?: Record<string, any>;
 }

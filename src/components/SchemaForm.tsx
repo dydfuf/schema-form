@@ -76,7 +76,7 @@ export function SchemaForm<T extends ZodSchema>({
       <FieldRenderer
         key={field.name}
         name={field.name}
-        form={form}
+        form={form as any}
         schema={field.schema}
         label={field.label || field.name}
         required={field.required}

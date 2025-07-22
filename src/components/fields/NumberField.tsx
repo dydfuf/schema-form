@@ -15,16 +15,12 @@ export function NumberField({
   const unwrapped = unwrapSchema(schema);
 
   // Determine if it's an integer or float
-  const isInt =
-    unwrapped._def?.checks?.some((check: any) => check.kind === "int") || false;
+  const checks = (unwrapped._def as any)?.checks || [];
+  const isInt = checks.some((check: any) => check.kind === "int") || false;
 
   // Get min/max values from schema
-  const minValue = unwrapped._def?.checks?.find(
-    (check: any) => check.kind === "min"
-  )?.value;
-  const maxValue = unwrapped._def?.checks?.find(
-    (check: any) => check.kind === "max"
-  )?.value;
+  const minValue = checks.find((check: any) => check.kind === "min")?.value;
+  const maxValue = checks.find((check: any) => check.kind === "max")?.value;
 
   return (
     <div className="space-y-1">

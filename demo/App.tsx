@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { BasicExample } from "../examples/basic-example";
 import { NestedExample } from "../examples/nested-example";
+import { MetaExample } from "../examples/meta-example";
 
-type ExampleType = "basic" | "nested";
+type ExampleType = "basic" | "nested" | "meta";
 
 function App() {
   const [currentExample, setCurrentExample] = useState<ExampleType>("basic");
@@ -17,6 +18,11 @@ function App() {
       title: "중첩 객체 예제",
       description: "중첩된 객체와 복잡한 스키마를 다루는 예제입니다.",
       component: <NestedExample />,
+    },
+    meta: {
+      title: "Meta 기능 예제",
+      description: "Zod v4의 meta 기능을 사용한 커스터마이징 예제입니다.",
+      component: <MetaExample />,
     },
   };
 
