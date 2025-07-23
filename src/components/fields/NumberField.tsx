@@ -10,17 +10,37 @@ export function NumberField({
   description,
   className,
   error,
-}: FieldComponentProps) {
-  const { register } = form;
+  ...additionalProps
+}: FieldComponentProps & Record<string, any>) {
+  const { watch, setValue } = form || {};
+
+  // Use controlled component approach to avoid ref issues
+  const value = watch ? watch(name) || "" : "";
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (setValue) {
+      const numValue =
+        e.target.value === "" ? undefined : Number(e.target.value);
+      setValue(name, numValue, { shouldValidate: true });
+    }
+  };
+
   const unwrapped = unwrapSchema(schema);
 
-  // Determine if it's an integer or float
-  const checks = (unwrapped._def as any)?.checks || [];
-  const isInt = checks.some((check: any) => check.kind === "int") || false;
+  // Extract meta props
+  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
+  const { step, min, max, ...restMetaProps } = metaProps;
 
-  // Get min/max values from schema
-  const minValue = checks.find((check: any) => check.kind === "min")?.value;
-  const maxValue = checks.find((check: any) => check.kind === "max")?.value;
+  // Determine number type and constraints
+  const zodDef = (unwrapped as any)._def;
+  const isInteger =
+    zodDef?.typeName === "ZodNumber" &&
+    zodDef?.checks?.some((check: any) => check.kind === "int");
+
+  const minValue =
+    zodDef?.checks?.find((check: any) => check.kind === "min")?.value ?? min;
+  const maxValue =
+    zodDef?.checks?.find((check: any) => check.kind === "max")?.value ?? max;
 
   return (
     <div className="space-y-1">
@@ -35,13 +55,17 @@ export function NumberField({
 
       <input
         id={name}
+        name={name}
         type="number"
-        step={isInt ? "1" : "any"}
+        value={value}
+        onChange={handleChange}
+        step={step || (isInteger ? "1" : "any")}
         min={minValue}
         max={maxValue}
         placeholder={placeholder}
-        {...register(name, { valueAsNumber: true })}
-        className={`
+        className={
+          className ||
+          `
           w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-gray-50 disabled:text-gray-500
@@ -50,8 +74,10 @@ export function NumberField({
               ? "border-red-500 focus:ring-red-500 focus:border-red-500"
               : ""
           }
-          ${className || ""}
-        `.trim()}
+        `.trim()
+        }
+        {...restMetaProps}
+        {...otherAdditionalProps}
       />
 
       {description && <p className="text-sm text-gray-500">{description}</p>}

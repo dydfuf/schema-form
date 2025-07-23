@@ -19,6 +19,7 @@ export function SchemaForm<T extends ZodSchema>({
   });
 
   const handleSubmit = useSchemaFormSubmit(form, onSubmit);
+
   const fields = parseSchema(schema);
 
   const renderSubmitButton = () => {
@@ -67,11 +68,6 @@ export function SchemaForm<T extends ZodSchema>({
   };
 
   const renderField = (field: any) => {
-    // Skip nested fields as they will be rendered by their parent
-    if (field.name.includes(".")) {
-      return null;
-    }
-
     return (
       <FieldRenderer
         key={field.name}

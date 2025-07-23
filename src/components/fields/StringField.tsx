@@ -12,12 +12,25 @@ export function StringField({
   error,
   ...additionalProps
 }: FieldComponentProps & Record<string, any>) {
-  const { register } = form;
+  const { watch, setValue } = form || {};
+
+  // Use controlled component approach to avoid ref issues
+  const value = watch ? watch(name) || "" : "";
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    if (setValue) {
+      setValue(name, e.target.value, { shouldValidate: true });
+    }
+  };
+
   const unwrapped = unwrapSchema(schema);
 
   // Check if it's a textarea (multiline string)
+  const zodDef = (unwrapped as any)._def;
   const isTextarea =
-    unwrapped._def?.checks?.some(
+    zodDef?.checks?.some(
       (check: any) => check.kind === "min" && check.value > 100
     ) || false;
 
@@ -29,7 +42,10 @@ export function StringField({
   const shouldBeTextarea = as === "textarea" || isTextarea;
 
   const inputProps = {
-    ...register(name),
+    id: name,
+    name,
+    value,
+    onChange: handleChange,
     placeholder,
     type: shouldBeTextarea ? undefined : type,
     rows: shouldBeTextarea ? rows || 4 : undefined,

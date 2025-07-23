@@ -33,6 +33,7 @@ export function FieldRenderer({
   const renderers = { ...defaultFieldRenderers, ...customRenderers };
   const meta = getSchemaMeta(schema);
 
+  // Determine which field component to render based on the field type
   const FieldComponent = renderers[fieldType] || renderers.string;
 
   // Merge meta props with field props

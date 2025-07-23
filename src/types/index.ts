@@ -75,7 +75,7 @@ export interface SchemaMetadata {
 
 // Hook return types
 export interface UseSchemaFormReturn<T extends ZodSchema> {
-  form: UseFormReturn<InferredType<T>>;
+  form: UseFormReturn<FieldValues>;
   schema: T;
   isSubmitting: boolean;
   isValid: boolean;
@@ -111,7 +111,8 @@ export type ZodTypeName =
   | "ZodAny"
   | "ZodUnknown"
   | "ZodBigInt"
-  | "ZodSymbol";
+  | "ZodSymbol"
+  | "object";
 
 export interface ParsedField {
   name: string;

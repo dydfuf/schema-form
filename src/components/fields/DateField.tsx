@@ -9,7 +9,12 @@ export function DateField({
   className,
   error,
 }: FieldComponentProps) {
-  const { register } = form;
+  const { watch, setValue } = form;
+  const value = watch(name);
+
+  // Convert Date to string for input value
+  const inputValue =
+    value instanceof Date ? value.toISOString().split("T")[0] : value || "";
 
   return (
     <div className="space-y-1">
@@ -26,10 +31,13 @@ export function DateField({
         id={name}
         type="date"
         placeholder={placeholder}
-        {...register(name, {
-          valueAsDate: true,
-          setValueAs: (value: string) => (value ? new Date(value) : undefined),
-        })}
+        value={inputValue}
+        onChange={(e) => {
+          const dateValue = e.target.value
+            ? new Date(e.target.value)
+            : undefined;
+          setValue(name, dateValue);
+        }}
         className={`
           w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500

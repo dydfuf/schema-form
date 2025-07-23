@@ -16,7 +16,7 @@ export function ObjectField({
     schema instanceof z.ZodOptional ||
     schema instanceof z.ZodNullable ||
     schema instanceof z.ZodDefault
-      ? schema._def.innerType
+      ? (schema as any)._def.innerType
       : schema;
 
   if (!(unwrappedSchema instanceof z.ZodObject)) {

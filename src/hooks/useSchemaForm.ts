@@ -1,11 +1,16 @@
-import { useForm, UseFormProps, UseFormReturn } from "react-hook-form";
+import {
+  useForm,
+  UseFormProps,
+  UseFormReturn,
+  FieldValues,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
 import { ZodSchema, InferredType, UseSchemaFormReturn } from "../types";
 import { parseSchema, getDefaultValue } from "../utils/schema-parser";
 
 export interface UseSchemaFormOptions<T extends ZodSchema>
-  extends Omit<UseFormProps<InferredType<T>>, "resolver"> {
+  extends Omit<UseFormProps<FieldValues>, "resolver"> {
   schema: T;
 }
 
@@ -45,13 +50,14 @@ export function useSchemaForm<T extends ZodSchema>({
       }
     });
 
-    return defaults as Partial<InferredType<T>>;
+    return defaults;
   }, [schema, defaultValues]);
 
   // Initialize react-hook-form with zodResolver
-  const form = useForm<InferredType<T>>({
-    resolver: zodResolver(schema as any) as any,
-    defaultValues: computedDefaultValues as any,
+  const form = useForm<FieldValues>({
+    resolver: zodResolver(schema as any),
+    defaultValues: computedDefaultValues,
+    mode: "onChange",
     ...formOptions,
   });
 
@@ -83,7 +89,7 @@ export function useSchemaForm<T extends ZodSchema>({
   }, [errors]);
 
   return {
-    form: form as UseFormReturn<InferredType<T>>,
+    form,
     schema,
     isSubmitting,
     isValid,
@@ -95,7 +101,7 @@ export function useSchemaForm<T extends ZodSchema>({
  * Hook for handling form submission with proper error handling
  */
 export function useSchemaFormSubmit<T extends ZodSchema>(
-  form: UseFormReturn<InferredType<T>>,
+  form: UseFormReturn<FieldValues>,
   onSubmit: (data: InferredType<T>) => void | Promise<void>
 ) {
   return form.handleSubmit(async (data) => {

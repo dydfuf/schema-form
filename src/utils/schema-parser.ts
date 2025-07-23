@@ -5,7 +5,9 @@ import { ZodTypeName, ParsedField } from "../types";
  * Get the Zod type name from a schema
  */
 export function getZodTypeName(schema: z.ZodTypeAny): ZodTypeName {
-  return (schema._def as any).typeName as ZodTypeName;
+  // Try both typeName and type for compatibility
+  const def = (schema as any)._def;
+  return (def.typeName || def.type) as ZodTypeName;
 }
 
 /**
@@ -38,11 +40,18 @@ export function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
 export function getSchemaMeta(
   schema: z.ZodTypeAny
 ): Record<string, any> | undefined {
-  // Check if the schema has meta information
-  if ("_def" in schema && "meta" in schema._def) {
-    return (schema._def as any).meta;
+  // In Zod v4, meta() method is used to retrieve metadata from globalRegistry
+  try {
+    const meta = (schema as any).meta?.();
+    return meta;
+  } catch (error) {
+    // Fallback to _def.meta for compatibility
+    if ("_def" in schema && "meta" in (schema as any)._def) {
+      return (schema as any)._def.meta;
+    }
+
+    return undefined;
   }
-  return undefined;
 }
 
 /**
@@ -64,7 +73,7 @@ export function getEnumOptions(
 
   if (typeName === "ZodNativeEnum") {
     const nativeEnumSchema = unwrapped as any;
-    const enumObject = nativeEnumSchema._def.values;
+    const enumObject = (nativeEnumSchema as any)._def.values;
     return Object.entries(enumObject).map(([key, value]) => ({
       label: key,
       value: value as string | number,
@@ -89,15 +98,17 @@ export function parseSchema(
   const meta = getSchemaMeta(schema);
 
   switch (typeName) {
-    case "ZodObject": {
+    case "ZodObject":
+    case "object": {
       const objectSchema = unwrapped as z.ZodObject<any>;
       const shape = objectSchema.shape;
 
       if (name) {
         // This is a nested object
         const nestedFields = Object.entries(shape).flatMap(
-          ([key, fieldSchema]) =>
-            parseSchema(fieldSchema as z.ZodTypeAny, key, fieldPath)
+          ([key, fieldSchema]) => {
+            return parseSchema(fieldSchema as z.ZodTypeAny, key, fieldPath);
+          }
         );
 
         return [
@@ -240,6 +251,7 @@ export function getFieldType(schema: z.ZodTypeAny): string {
     case "ZodArray":
       return "array";
     case "ZodObject":
+    case "object":
       return "object";
     case "ZodEnum":
     case "ZodNativeEnum":
@@ -264,7 +276,7 @@ export function getDefaultValue(schema: z.ZodTypeAny): any {
 
   if (typeName === "ZodDefault") {
     const defaultSchema = schema as z.ZodDefault<any>;
-    return defaultSchema._def.defaultValue();
+    return (defaultSchema as any)._def.defaultValue();
   }
 
   return undefined;
