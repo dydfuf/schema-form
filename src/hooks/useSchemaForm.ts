@@ -5,7 +5,7 @@ import {
   FieldValues,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { ZodSchema, InferredType, UseSchemaFormReturn } from "../types";
 import { parseSchema, getDefaultValue } from "../utils/schema-parser";
 
@@ -22,16 +22,18 @@ export function useSchemaForm<T extends ZodSchema>({
   defaultValues,
   ...formOptions
 }: UseSchemaFormOptions<T>): UseSchemaFormReturn<T> {
+  // Cache parsed fields to avoid re-parsing on every render
+  const parsedFields = useMemo(() => parseSchema(schema), [schema]);
+
   // Parse schema to extract default values if not provided
   const computedDefaultValues = useMemo(() => {
     if (defaultValues) {
       return defaultValues;
     }
 
-    const fields = parseSchema(schema);
     const defaults: Record<string, any> = {};
 
-    fields.forEach((field) => {
+    parsedFields.forEach((field) => {
       const defaultValue = getDefaultValue(field.schema);
       if (defaultValue !== undefined) {
         // Handle nested field paths (e.g., "user.name")
@@ -51,7 +53,7 @@ export function useSchemaForm<T extends ZodSchema>({
     });
 
     return defaults;
-  }, [schema, defaultValues]);
+  }, [parsedFields, defaultValues]);
 
   // Initialize react-hook-form with zodResolver
   const form = useForm<FieldValues>({
@@ -65,8 +67,13 @@ export function useSchemaForm<T extends ZodSchema>({
   const { formState } = form;
   const { isSubmitting, isValid, errors } = formState;
 
-  // Convert react-hook-form errors to a flat object
+  // Convert react-hook-form errors to a flat object with optimized memoization
   const flatErrors = useMemo(() => {
+    // Early return if no errors
+    if (!errors || Object.keys(errors).length === 0) {
+      return {};
+    }
+
     const flatErrorsObj: Record<string, string> = {};
 
     const flattenErrors = (errorsObj: any, prefix = "") => {
@@ -104,13 +111,16 @@ export function useSchemaFormSubmit<T extends ZodSchema>(
   form: UseFormReturn<FieldValues>,
   onSubmit: (data: InferredType<T>) => void | Promise<void>
 ) {
-  return form.handleSubmit(async (data) => {
-    try {
-      await onSubmit(data as InferredType<T>);
-    } catch (error) {
-      console.error("Form submission error:", error);
-      // You can add custom error handling here
-      // For example, setting form errors or showing notifications
-    }
-  });
+  return useCallback(
+    form.handleSubmit(async (data) => {
+      try {
+        await onSubmit(data as InferredType<T>);
+      } catch (error) {
+        console.error("Form submission error:", error);
+        // You can add custom error handling here
+        // For example, setting form errors or showing notifications
+      }
+    }),
+    [form, onSubmit]
+  );
 }

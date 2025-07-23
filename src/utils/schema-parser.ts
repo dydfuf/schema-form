@@ -2,6 +2,10 @@ import { z } from "zod";
 import { $ZodTypeDef } from "zod/v4/core";
 import { ParsedField, FieldMeta } from "../types";
 
+// Cache for parsed schemas to improve performance
+const schemaParseCache = new WeakMap<z.ZodTypeAny, ParsedField[]>();
+const defaultValueCache = new WeakMap<z.ZodTypeAny, any>();
+
 /**
  * Get the Zod type name from a schema
  */
@@ -84,6 +88,14 @@ export function parseSchema(
   name = "",
   parentPath = ""
 ): ParsedField[] {
+  // Check cache for root schema (when name and parentPath are empty)
+  if (!name && !parentPath) {
+    const cached = schemaParseCache.get(schema);
+    if (cached) {
+      return cached;
+    }
+  }
+
   const unwrapped = unwrapSchema(schema);
   const typeName = getZodTypeName(unwrapped);
   const required = isFieldRequired(schema);
@@ -115,9 +127,14 @@ export function parseSchema(
         ];
       } else {
         // This is the root object
-        return Object.entries(shape).flatMap(([key, fieldSchema]) =>
+        const result = Object.entries(shape).flatMap(([key, fieldSchema]) =>
           parseSchema(fieldSchema as z.ZodTypeAny, key, "")
         );
+
+        // Cache the result for root schema
+        schemaParseCache.set(schema, result);
+
+        return result;
       }
     }
 
@@ -245,17 +262,34 @@ export function parseSchema(
 
     default: {
       // Fallback to string for unsupported types
-      return [
+      const result = [
         {
           name: fieldPath,
-          type: "string",
+          type: "string" as const,
           schema,
           required,
           meta,
         },
       ];
+
+      // Cache the result for root schema
+      if (!name && !parentPath) {
+        schemaParseCache.set(schema, result);
+      }
+
+      return result;
     }
   }
+
+  // This should not be reached, but we need to handle the end of the function
+  const result: ParsedField[] = [];
+
+  // Cache the result for root schema
+  if (!name && !parentPath) {
+    schemaParseCache.set(schema, result);
+  }
+
+  return result;
 }
 
 /**
@@ -333,12 +367,23 @@ export function getFieldType(schema: z.ZodTypeAny): string {
  * Get default value from schema
  */
 export function getDefaultValue(schema: z.ZodTypeAny): any {
+  // Check cache first
+  if (defaultValueCache.has(schema)) {
+    return defaultValueCache.get(schema);
+  }
+
   const typeName = getZodTypeName(schema);
+  let result: any;
 
   if (typeName === "default") {
     const defaultSchema = schema as z.ZodDefault<any>;
-    return (defaultSchema as any)._def.defaultValue();
+    result = (defaultSchema as any)._def.defaultValue();
+  } else {
+    result = undefined;
   }
 
-  return undefined;
+  // Cache the result
+  defaultValueCache.set(schema, result);
+
+  return result;
 }
