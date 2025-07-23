@@ -266,18 +266,10 @@ export function getFieldType(schema: z.ZodTypeAny): string {
   const typeName = getZodTypeName(unwrapped);
   const meta = getSchemaMeta(schema);
 
-  console.log({ unwrapped, typeName, meta });
-
   switch (typeName) {
     case "string":
       // Check meta for variant
       if (meta?.variant) {
-        console.log(
-          "Returning variant field type:",
-          meta.variant,
-          "for:",
-          meta
-        );
         return meta.variant;
       }
 
@@ -287,37 +279,29 @@ export function getFieldType(schema: z.ZodTypeAny): string {
 
       for (const check of checks) {
         if (check.kind === "email") {
-          console.log("Returning email field type for:", meta);
           return "email";
         }
         if (check.kind === "url") {
-          console.log("Returning url field type for:", meta);
           return "url";
         }
         if (check.kind === "datetime") {
-          console.log("Returning datetime field type for:", meta);
           return "datetime-local";
         }
       }
 
-      console.log("Returning string field type for:", typeName, meta);
       return "string";
     case "number":
     case "bigint":
       // Check meta for variant
       if (meta?.variant) {
-        console.log("Returning number variant:", meta.variant, "for:", meta);
         return meta.variant;
       }
-      console.log("Returning number field type for:", typeName);
       return "number";
     case "boolean":
       // Check meta for variant
       if (meta?.variant) {
-        console.log("Returning boolean variant:", meta.variant, "for:", meta);
         return meta.variant;
       }
-      console.log("Returning boolean field type for:", typeName, meta);
       return "boolean";
     case "date":
       return "date";
@@ -328,13 +312,10 @@ export function getFieldType(schema: z.ZodTypeAny): string {
     case "enum":
       return "enum";
     case "literal":
-      console.log("Returning literal field type for:", typeName);
       return "literal";
     case "record":
-      console.log("Returning record field type for:", typeName);
       return "record";
     case "tuple":
-      console.log("Returning tuple field type for:", typeName);
       return "tuple";
     case "union":
       // Check if it's a simple string union

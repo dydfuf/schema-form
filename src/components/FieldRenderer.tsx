@@ -45,7 +45,6 @@ export function FieldRenderer({
   ...fieldProps
 }: FieldRendererProps) {
   const fieldType = getFieldType(schema);
-  console.log({ fieldType, fieldProps });
   const renderers = { ...defaultFieldRenderers, ...customRenderers };
   const meta = getSchemaMeta(schema);
 
