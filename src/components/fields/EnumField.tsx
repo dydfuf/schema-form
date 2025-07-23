@@ -34,7 +34,9 @@ export function EnumField({
       <select
         id={name}
         value={value}
-        onChange={(e) => setValue(name, e.target.value)}
+        onChange={(e) =>
+          setValue(name, e.target.value, { shouldValidate: true })
+        }
         className={getBaseInputClasses(error, className)}
         {...getErrorAriaAttributes(error, name)}
       >

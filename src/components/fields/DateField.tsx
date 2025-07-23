@@ -41,7 +41,7 @@ export function DateField({
           const dateValue = e.target.value
             ? new Date(e.target.value)
             : undefined;
-          setValue(name, dateValue);
+          setValue(name, dateValue, { shouldValidate: true });
         }}
         className={getBaseInputClasses(error, className)}
         {...getErrorAriaAttributes(error, name)}
