@@ -1,4 +1,9 @@
 import { FieldComponentProps, FieldAdditionalProps } from "../../types";
+import {
+  getErrorInputClasses,
+  getErrorAriaAttributes,
+  ErrorMessageComponent,
+} from "../../utils/error-handling";
 
 export function BooleanField({
   name,
@@ -44,17 +49,16 @@ export function BooleanField({
           onChange={handleChange}
           className={
             className ||
-            `
-            h-4 w-4 text-blue-600 border-gray-300 rounded 
-            focus:ring-2 focus:ring-blue-500
-            ${error ? "border-red-500 focus:ring-red-500" : ""}
-          `.trim()
+            `h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 ${getErrorInputClasses(
+              error
+            )}`.trim()
           }
           autoFocus={autoFocus}
           readOnly={readOnly}
           tabIndex={tabIndex}
           onFocus={onFocus}
           onBlur={onBlur}
+          {...getErrorAriaAttributes(error, name)}
           {...otherAdditionalProps}
         />
         {label && (
@@ -69,7 +73,7 @@ export function BooleanField({
 
       {description && <p className="text-sm text-gray-500">{description}</p>}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <ErrorMessageComponent error={error} />
     </div>
   );
 }

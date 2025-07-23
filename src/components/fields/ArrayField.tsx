@@ -2,6 +2,7 @@ import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 import { FieldRenderer } from "../FieldRenderer";
 import { z } from "zod";
 import { useFieldArray } from "react-hook-form";
+import { ErrorMessageComponent } from "../../utils/error-handling";
 
 export function ArrayField({
   name,
@@ -123,13 +124,7 @@ export function ArrayField({
         {addButtonText}
       </button>
 
-      {error && (
-        <div className="mt-2 text-sm text-red-600">
-          {typeof error === "string"
-            ? error
-            : (error as any)?.message || "Validation error"}
-        </div>
-      )}
+      <ErrorMessageComponent error={error} />
     </div>
   );
 }

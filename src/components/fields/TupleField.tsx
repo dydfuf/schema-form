@@ -1,6 +1,7 @@
 import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 import { parseSchema } from "../../utils/schema-parser";
 import { FieldRenderer } from "../FieldRenderer";
+import { ErrorMessageComponent } from "../../utils/error-handling";
 
 export function TupleField({
   name,
@@ -89,7 +90,7 @@ export function TupleField({
 
       {description && <p className="text-sm text-gray-500">{description}</p>}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <ErrorMessageComponent error={error} />
     </div>
   );
 }

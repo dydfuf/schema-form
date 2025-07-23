@@ -1,4 +1,5 @@
 import { FieldComponentProps, FieldAdditionalProps } from "../../types";
+import { ErrorMessageComponent } from "../../utils/error-handling";
 
 export function LiteralField({
   name,
@@ -6,6 +7,7 @@ export function LiteralField({
   label,
   description,
   className,
+  error,
   ...additionalProps
 }: FieldComponentProps & FieldAdditionalProps) {
   // Get the literal value from the schema
@@ -73,6 +75,8 @@ export function LiteralField({
       {renderContent()}
 
       {description && <p className="text-sm text-gray-500">{description}</p>}
+
+      <ErrorMessageComponent error={error} />
     </div>
   );
 }

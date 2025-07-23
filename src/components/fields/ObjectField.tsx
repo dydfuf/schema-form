@@ -1,6 +1,7 @@
 import { FieldComponentProps } from "../../types";
 import { FieldRenderer } from "../FieldRenderer";
 import { z } from "zod";
+import { ErrorMessageComponent } from "../../utils/error-handling";
 
 export function ObjectField({
   name,
@@ -68,13 +69,7 @@ export function ObjectField({
         })}
       </div>
 
-      {error && (
-        <div className="mt-2 text-sm text-red-600">
-          {typeof error === "string"
-            ? error
-            : (error as any)?.message || "Validation error"}
-        </div>
-      )}
+      <ErrorMessageComponent error={error} />
     </div>
   );
 }
