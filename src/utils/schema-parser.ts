@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { $ZodTypeDef } from "zod/v4/core";
 import { ParsedField, FieldMeta } from "../types";
+import { validateMeta } from "./meta-validation";
 
 // Cache for parsed schemas to improve performance
 const schemaParseCache = new WeakMap<z.ZodTypeAny, ParsedField[]>();
@@ -40,7 +41,7 @@ export function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
 }
 
 /**
- * Get meta information from a Zod schema with proper typing
+ * Get meta information from a Zod schema with proper typing and validation
  */
 export function getSchemaMeta(schema: z.ZodTypeAny): FieldMeta | undefined {
   // Get raw meta from schema
@@ -54,7 +55,23 @@ export function getSchemaMeta(schema: z.ZodTypeAny): FieldMeta | undefined {
     }
   }
 
-  // Return meta as-is since it should only contain UI/UX information
+  // If no meta found, return undefined
+  if (!rawMeta) {
+    return undefined;
+  }
+
+  // Validate meta against the schema type
+  const validation = validateMeta(rawMeta, schema);
+  
+  if (!validation.isValid) {
+    console.warn(
+      `Invalid meta for field type ${getZodTypeName(schema)}:`,
+      validation.errors
+    );
+    // Return undefined for invalid meta to prevent runtime errors
+    return undefined;
+  }
+
   return rawMeta as FieldMeta;
 }
 
