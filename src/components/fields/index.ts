@@ -11,3 +11,4 @@ export { PasswordField } from "./PasswordField";
 export { UrlField } from "./UrlField";
 export { RecordField } from "./RecordField";
 export { TupleField } from "./TupleField";
+export { ArrayField } from "./ArrayField";

@@ -14,6 +14,7 @@ import {
   UrlField,
   RecordField,
   TupleField,
+  ArrayField,
 } from "./fields";
 
 // Default field renderer map
@@ -23,7 +24,7 @@ const defaultFieldRenderers: FieldRendererMap = {
   boolean: BooleanField,
   date: DateField,
   enum: EnumField,
-  array: StringField, // TODO: Implement ArrayField
+  array: ArrayField,
   object: ObjectField,
   literal: LiteralField,
   textarea: TextareaField,
@@ -62,7 +63,7 @@ export function FieldRenderer({
       disabled:
         meta.disabled !== undefined ? meta.disabled : fieldProps.disabled,
       hidden: meta.hidden !== undefined ? meta.hidden : fieldProps.hidden,
-      ...meta,
+      // Add other specific meta props here if needed, avoiding blind spread
     }),
   };
 
