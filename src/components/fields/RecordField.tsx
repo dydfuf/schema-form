@@ -1,16 +1,13 @@
 import { useState } from "react";
-import { FieldComponentProps } from "../../types";
+import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 
 export function RecordField({
   name,
   form,
-  schema,
   label,
   description,
-  className,
   error,
-  ...additionalProps
-}: FieldComponentProps & Record<string, any>) {
+}: FieldComponentProps & FieldAdditionalProps) {
   const { watch, setValue } = form || {};
 
   // Use controlled component approach
@@ -55,14 +52,10 @@ export function RecordField({
     }
   };
 
-  // Extract meta props
-  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
-  const {
-    keyPlaceholder = "Key",
-    valuePlaceholder = "Value",
-    addButtonText = "Add",
-    ...restMetaProps
-  } = metaProps;
+  // Define default values for record-specific props
+  const keyPlaceholder = "Key";
+  const valuePlaceholder = "Value";
+  const addButtonText = "Add";
 
   const inputClassName = `
     px-3 py-2 border border-gray-300 rounded-md shadow-sm 

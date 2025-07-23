@@ -36,7 +36,7 @@ export interface FieldComponentProps<T extends FieldValues = FieldValues>
 
 // Field renderer types
 export type FieldRenderer<T extends FieldValues = FieldValues> = ComponentType<
-  FieldComponentProps<T>
+  FieldComponentProps<T> & FieldAdditionalProps
 >;
 
 export interface FieldRendererMap {
@@ -64,6 +64,41 @@ export interface SchemaFormProps<T extends ZodSchema> {
   resetButton?: ReactNode | ((reset: () => void) => ReactNode);
 }
 
+// Additional props that can be passed to field components
+export interface FieldAdditionalProps {
+  // HTML input attributes
+  autoComplete?: string;
+  autoFocus?: boolean;
+  maxLength?: number;
+  minLength?: number;
+  pattern?: string;
+  readOnly?: boolean;
+  tabIndex?: number;
+
+  // Custom field props
+  rows?: number; // for textarea
+  cols?: number; // for textarea
+  multiple?: boolean; // for select
+  size?: number; // for select
+  step?: number; // for number input
+  min?: number | string; // for number/date input
+  max?: number | string; // for number/date input
+
+  // Event handlers
+  onFocus?: (event: React.FocusEvent) => void;
+  onBlur?: (event: React.FocusEvent) => void;
+  onChange?: (event: React.ChangeEvent) => void;
+
+  // ARIA attributes
+  "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-required"?: boolean;
+  "aria-invalid"?: boolean;
+
+  // Data attributes
+  [key: `data-${string}`]: string | number | boolean | undefined;
+}
+
 // Field configuration
 export interface FieldConfig {
   label?: string;
@@ -73,7 +108,7 @@ export interface FieldConfig {
   disabled?: boolean;
   className?: string;
   renderer?: string | FieldRenderer;
-  props?: Record<string, any>;
+  props?: FieldAdditionalProps;
 }
 
 // Base field metadata with common properties

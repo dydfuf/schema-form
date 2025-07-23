@@ -1,4 +1,4 @@
-import { FieldComponentProps } from "../../types";
+import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 import { unwrapSchema } from "../../utils/schema-parser";
 
 export function StringField({
@@ -11,7 +11,7 @@ export function StringField({
   className,
   error,
   ...additionalProps
-}: FieldComponentProps & Record<string, any>) {
+}: FieldComponentProps & FieldAdditionalProps) {
   const { watch, setValue } = form || {};
 
   // Use controlled component approach to avoid ref issues
@@ -34,12 +34,27 @@ export function StringField({
       (check: any) => check.kind === "min" && check.value > 100
     ) || false;
 
-  // Extract meta props
-  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
-  const { as, type = "text", rows, ...restMetaProps } = metaProps;
+  // Extract specific props for string field
+  const {
+    autoComplete,
+    autoFocus,
+    maxLength,
+    minLength,
+    pattern,
+    readOnly,
+    tabIndex,
+    rows,
+    onFocus,
+    onBlur,
+    onChange: customOnChange,
+    ...otherAdditionalProps
+  } = additionalProps;
 
-  // Determine if it should be a textarea
-  const shouldBeTextarea = as === "textarea" || isTextarea;
+  // Default type for string field
+  const type = "text";
+
+  // Determine if it should be a textarea based on schema or rows prop
+  const shouldBeTextarea = isTextarea || (rows && rows > 1);
 
   const inputProps = {
     id: name,
@@ -57,7 +72,15 @@ export function StringField({
       disabled:bg-gray-50 disabled:text-gray-500
       ${error ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}
     `.trim(),
-    ...restMetaProps,
+    autoComplete,
+    autoFocus,
+    maxLength,
+    minLength,
+    pattern,
+    readOnly,
+    tabIndex,
+    onFocus,
+    onBlur,
     ...otherAdditionalProps,
   };
 
@@ -73,9 +96,9 @@ export function StringField({
       )}
 
       {shouldBeTextarea ? (
-        <textarea id={name} {...inputProps} />
+        <textarea {...inputProps} />
       ) : (
-        <input id={name} {...inputProps} />
+        <input {...inputProps} />
       )}
 
       {description && <p className="text-sm text-gray-500">{description}</p>}

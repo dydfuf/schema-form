@@ -1,4 +1,4 @@
-import { FieldComponentProps } from "../../types";
+import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 
 export function EmailField({
   name,
@@ -10,7 +10,7 @@ export function EmailField({
   className,
   error,
   ...additionalProps
-}: FieldComponentProps & Record<string, any>) {
+}: FieldComponentProps & FieldAdditionalProps) {
   const { watch, setValue } = form || {};
 
   // Use controlled component approach to avoid ref issues
@@ -22,9 +22,20 @@ export function EmailField({
     }
   };
 
-  // Extract meta props
-  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
-  const { autoComplete = "email", ...restMetaProps } = metaProps;
+  // Extract specific props for email field
+  const {
+    autoComplete,
+    autoFocus,
+    maxLength,
+    minLength,
+    pattern,
+    readOnly,
+    tabIndex,
+    onFocus,
+    onBlur,
+    onChange: customOnChange,
+    ...otherAdditionalProps
+  } = additionalProps;
 
   const inputProps = {
     id: name,
@@ -33,7 +44,15 @@ export function EmailField({
     value,
     onChange: handleChange,
     placeholder: placeholder || "Enter your email address",
-    autoComplete,
+    autoComplete: autoComplete || "email",
+    autoFocus,
+    maxLength,
+    minLength,
+    pattern,
+    readOnly,
+    tabIndex,
+    onFocus,
+    onBlur,
     className:
       className ||
       `
@@ -42,7 +61,6 @@ export function EmailField({
       disabled:bg-gray-50 disabled:text-gray-500
       ${error ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}
     `.trim(),
-    ...restMetaProps,
     ...otherAdditionalProps,
   };
 

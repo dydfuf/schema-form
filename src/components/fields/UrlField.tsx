@@ -1,4 +1,4 @@
-import { FieldComponentProps } from "../../types";
+import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 
 export function UrlField({
   name,
@@ -10,7 +10,7 @@ export function UrlField({
   className,
   error,
   ...additionalProps
-}: FieldComponentProps & Record<string, any>) {
+}: FieldComponentProps & FieldAdditionalProps) {
   const { watch, setValue } = form || {};
 
   // Use controlled component approach to avoid ref issues
@@ -22,13 +22,20 @@ export function UrlField({
     }
   };
 
-  // Extract meta props
-  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
+  // Extract specific props for url field
   const {
-    autoComplete = "url",
-    showPreview = false,
-    ...restMetaProps
-  } = metaProps;
+    autoComplete,
+    autoFocus,
+    maxLength,
+    minLength,
+    pattern,
+    readOnly,
+    tabIndex,
+    onFocus,
+    onBlur,
+    onChange: customOnChange,
+    ...otherAdditionalProps
+  } = additionalProps;
 
   const inputProps = {
     id: name,
@@ -37,7 +44,15 @@ export function UrlField({
     value,
     onChange: handleChange,
     placeholder: placeholder || "https://example.com",
-    autoComplete,
+    autoComplete: autoComplete || "url",
+    autoFocus: autoFocus,
+    maxLength: maxLength,
+    minLength: minLength,
+    pattern: pattern,
+    readOnly: readOnly,
+    tabIndex: tabIndex,
+    onFocus: onFocus,
+    onBlur: onBlur,
     className:
       className ||
       `
@@ -46,18 +61,7 @@ export function UrlField({
       disabled:bg-gray-50 disabled:text-gray-500
       ${error ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}
     `.trim(),
-    ...restMetaProps,
     ...otherAdditionalProps,
-  };
-
-  // Simple URL validation for preview
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
   };
 
   return (
@@ -72,32 +76,6 @@ export function UrlField({
       )}
 
       <input {...inputProps} />
-
-      {showPreview && value && isValidUrl(value) && (
-        <div className="mt-2">
-          <a
-            href={value}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-          >
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-            Open link
-          </a>
-        </div>
-      )}
 
       {description && <p className="text-sm text-gray-500">{description}</p>}
 

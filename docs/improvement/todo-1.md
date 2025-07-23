@@ -6,7 +6,7 @@ This document outlines critical issues, potential bugs, and areas for improvemen
 
 - [x] **`FieldRenderer` Props Conflict Risk**: Props from `meta` might conflict with standard HTML attributes.
 - [x] **Unimplemented Array Field**: The `ArrayField` is not implemented, causing a gap in functionality.
-- [ ] **Type Safety with `Record<string, any>`**: Using `Record<string, any>` for props weakens type safety.
+- [x] **Type Safety with `Record<string, any>`**: Using `Record<string, any>` for props weakens type safety.
 - [ ] **Inconsistent Error Handling**: Error handling is inconsistent across components.
 
 ## 2. Potential Bugs

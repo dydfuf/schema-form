@@ -1,4 +1,4 @@
-import { FieldComponentProps } from "../../types";
+import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 
 export function LiteralField({
   name,
@@ -7,13 +7,39 @@ export function LiteralField({
   description,
   className,
   ...additionalProps
-}: FieldComponentProps & Record<string, any>) {
+}: FieldComponentProps & FieldAdditionalProps) {
   // Get the literal value from the schema
   const literalValue = (schema as any)._def?.value;
 
-  // Extract meta props
-  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
-  const { as = "p", ...restMetaProps } = metaProps;
+  // Extract specific props that are valid for display elements
+  const {
+    tabIndex,
+    "aria-label": ariaLabel,
+    "aria-describedby": ariaDescribedby,
+    "aria-invalid": ariaInvalid,
+    // Filter out form-specific props that don't belong on display elements
+    form,
+    placeholder,
+    required,
+    disabled,
+    readOnly,
+    autoFocus,
+    autoComplete,
+    maxLength,
+    minLength,
+    pattern,
+    step,
+    min,
+    max,
+    multiple,
+    size,
+    rows,
+    cols,
+    onChange,
+    onFocus,
+    onBlur,
+    ...dataAttributes
+  } = additionalProps;
 
   const displayValue = literalValue !== undefined ? String(literalValue) : "";
 
@@ -24,31 +50,15 @@ export function LiteralField({
       w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md
       text-gray-700 text-sm
     `.trim(),
-    ...restMetaProps,
-    ...otherAdditionalProps,
+    tabIndex,
+    "aria-label": ariaLabel,
+    "aria-describedby": ariaDescribedby,
+    "aria-invalid": ariaInvalid,
+    ...dataAttributes,
   };
 
+  // Always render as paragraph for literal fields
   const renderContent = () => {
-    if (as === "div") {
-      return <div {...containerProps}>{displayValue}</div>;
-    }
-    if (as === "span") {
-      return <span {...containerProps}>{displayValue}</span>;
-    }
-    if (as === "code") {
-      return (
-        <code
-          {...containerProps}
-          className={`
-            ${containerProps.className}
-            font-mono bg-gray-100 border-gray-300
-          `.trim()}
-        >
-          {displayValue}
-        </code>
-      );
-    }
-    // Default to paragraph
     return <p {...containerProps}>{displayValue}</p>;
   };
 

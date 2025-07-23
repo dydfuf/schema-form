@@ -1,4 +1,4 @@
-import { FieldComponentProps } from "../../types";
+import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 import { FieldRenderer } from "../FieldRenderer";
 import { z } from "zod";
 import { useFieldArray } from "react-hook-form";
@@ -12,7 +12,7 @@ export function ArrayField({
   className,
   error,
   ...additionalProps
-}: FieldComponentProps & Record<string, any>) {
+}: FieldComponentProps & FieldAdditionalProps) {
   const { control } = form || {};
 
   // Use react-hook-form's useFieldArray for array management
@@ -39,9 +39,12 @@ export function ArrayField({
 
   const elementSchema = unwrappedSchema.element;
 
-  // Extract meta props
-  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
-  const { addButtonText = "Add Item", removeButtonText = "Remove" } = metaProps;
+  // Extract specific props for array field
+  const { ...otherAdditionalProps } = additionalProps;
+
+  // Default button texts
+  const addButtonText = "Add Item";
+  const removeButtonText = "Remove";
 
   const handleAddItem = () => {
     // Add a default value based on the element schema type

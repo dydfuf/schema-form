@@ -1,4 +1,4 @@
-import { FieldComponentProps } from "../../types";
+import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 
 export function BooleanField({
   name,
@@ -10,7 +10,7 @@ export function BooleanField({
   className,
   error,
   ...additionalProps
-}: FieldComponentProps & Record<string, any>) {
+}: FieldComponentProps & FieldAdditionalProps) {
   const { watch, setValue } = form || {};
 
   // Use controlled component approach to avoid ref issues
@@ -22,9 +22,16 @@ export function BooleanField({
     }
   };
 
-  // Extract meta props
-  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
-  const { ...restMetaProps } = metaProps;
+  // Extract specific props for boolean field
+  const {
+    autoFocus,
+    readOnly,
+    tabIndex,
+    onFocus,
+    onBlur,
+    onChange: customOnChange,
+    ...otherAdditionalProps
+  } = additionalProps;
 
   return (
     <div className="space-y-1">
@@ -43,7 +50,11 @@ export function BooleanField({
             ${error ? "border-red-500 focus:ring-red-500" : ""}
           `.trim()
           }
-          {...restMetaProps}
+          autoFocus={autoFocus}
+          readOnly={readOnly}
+          tabIndex={tabIndex}
+          onFocus={onFocus}
+          onBlur={onBlur}
           {...otherAdditionalProps}
         />
         {label && (

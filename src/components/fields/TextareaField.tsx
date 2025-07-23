@@ -1,4 +1,4 @@
-import { FieldComponentProps } from "../../types";
+import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 
 export function TextareaField({
   name,
@@ -10,7 +10,7 @@ export function TextareaField({
   className,
   error,
   ...additionalProps
-}: FieldComponentProps & Record<string, any>) {
+}: FieldComponentProps & FieldAdditionalProps) {
   const { watch, setValue } = form || {};
 
   // Use controlled component approach to avoid ref issues
@@ -22,9 +22,21 @@ export function TextareaField({
     }
   };
 
-  // Extract meta props
-  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
-  const { rows = 4, cols, maxLength, minLength, ...restMetaProps } = metaProps;
+  // Extract specific props for textarea field
+  const {
+    rows,
+    cols,
+    autoComplete,
+    autoFocus,
+    maxLength,
+    minLength,
+    readOnly,
+    tabIndex,
+    onFocus,
+    onBlur,
+    onChange: customOnChange,
+    ...otherAdditionalProps
+  } = additionalProps;
 
   const textareaProps = {
     id: name,
@@ -32,10 +44,16 @@ export function TextareaField({
     value,
     onChange: handleChange,
     placeholder,
-    rows,
+    rows: rows || 4,
     cols,
+    autoComplete,
+    autoFocus,
     maxLength,
     minLength,
+    readOnly,
+    tabIndex,
+    onFocus,
+    onBlur,
     className:
       className ||
       `
@@ -44,7 +62,6 @@ export function TextareaField({
       disabled:bg-gray-50 disabled:text-gray-500 resize-vertical
       ${error ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}
     `.trim(),
-    ...restMetaProps,
     ...otherAdditionalProps,
   };
 

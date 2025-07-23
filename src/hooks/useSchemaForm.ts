@@ -41,9 +41,9 @@ export function useSchemaForm<T extends ZodSchema>({
         for (let i = 0; i < keys.length - 1; i++) {
           const key = keys[i];
           if (!(key in current)) {
-            current[key] = {};
+            current[key] = {} as Record<string, any>;
           }
-          current = current[key];
+          current = current[key] as Record<string, any>;
         }
 
         current[keys[keys.length - 1]] = defaultValue;

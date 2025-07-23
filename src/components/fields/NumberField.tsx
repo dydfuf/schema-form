@@ -1,4 +1,4 @@
-import { FieldComponentProps } from "../../types";
+import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 import { unwrapSchema } from "../../utils/schema-parser";
 
 export function NumberField({
@@ -11,7 +11,7 @@ export function NumberField({
   className,
   error,
   ...additionalProps
-}: FieldComponentProps & Record<string, any>) {
+}: FieldComponentProps & FieldAdditionalProps) {
   const { watch, setValue } = form || {};
 
   // Use controlled component approach to avoid ref issues
@@ -27,9 +27,20 @@ export function NumberField({
 
   const unwrapped = unwrapSchema(schema);
 
-  // Extract meta props
-  const { props: metaProps = {}, ...otherAdditionalProps } = additionalProps;
-  const { step, min, max, ...restMetaProps } = metaProps;
+  // Extract specific props for number field
+  const {
+    step: propStep,
+    min: propMin,
+    max: propMax,
+    autoComplete,
+    autoFocus,
+    readOnly,
+    tabIndex,
+    onFocus,
+    onBlur,
+    onChange: customOnChange,
+    ...otherAdditionalProps
+  } = additionalProps;
 
   // Determine number type and constraints
   const zodDef = (unwrapped as any)._def;
@@ -38,9 +49,11 @@ export function NumberField({
     zodDef?.checks?.some((check: any) => check.kind === "int");
 
   const minValue =
-    zodDef?.checks?.find((check: any) => check.kind === "min")?.value ?? min;
+    zodDef?.checks?.find((check: any) => check.kind === "min")?.value ??
+    propMin;
   const maxValue =
-    zodDef?.checks?.find((check: any) => check.kind === "max")?.value ?? max;
+    zodDef?.checks?.find((check: any) => check.kind === "max")?.value ??
+    propMax;
 
   return (
     <div className="space-y-1">
@@ -59,7 +72,7 @@ export function NumberField({
         type="number"
         value={value}
         onChange={handleChange}
-        step={step || (isInteger ? "1" : "any")}
+        step={propStep || (isInteger ? "1" : "any")}
         min={minValue}
         max={maxValue}
         placeholder={placeholder}
@@ -76,7 +89,12 @@ export function NumberField({
           }
         `.trim()
         }
-        {...restMetaProps}
+        autoComplete={autoComplete}
+        autoFocus={autoFocus}
+        readOnly={readOnly}
+        tabIndex={tabIndex}
+        onFocus={onFocus}
+        onBlur={onBlur}
         {...otherAdditionalProps}
       />
 
