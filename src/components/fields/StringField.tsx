@@ -1,9 +1,8 @@
 import { FieldComponentProps, FieldAdditionalProps } from "../../types";
-import { unwrapSchema } from "../../utils/schema-parser";
+import { BaseInputField } from "./BaseInputField";
 import {
   getBaseInputClasses,
   getErrorAriaAttributes,
-  ErrorMessageComponent,
 } from "../../utils/error-handling";
 
 export function StringField({
@@ -17,92 +16,81 @@ export function StringField({
   error,
   ...additionalProps
 }: FieldComponentProps & FieldAdditionalProps) {
-  const { watch, setValue } = form || {};
-
-  // Use controlled component approach to avoid ref issues
-  const value = watch ? watch(name) || "" : "";
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    if (setValue) {
-      setValue(name, e.target.value, { shouldValidate: true });
-    }
-  };
-
-  const unwrapped = unwrapSchema(schema);
-
-  // Check if it's a textarea (multiline string)
-  const zodDef = (unwrapped as any)._def;
+  // Check if this should be a textarea based on schema or props
   const isTextarea =
-    zodDef?.checks?.some(
-      (check: any) => check.kind === "min" && check.value > 100
-    ) || false;
+    (schema as any)?.format === "textarea" || additionalProps.rows;
 
-  // Extract specific props for string field
-  const {
-    autoComplete,
-    autoFocus,
-    maxLength,
-    minLength,
-    pattern,
-    readOnly,
-    tabIndex,
-    rows,
-    onFocus,
-    onBlur,
-    onChange: customOnChange,
-    ...otherAdditionalProps
-  } = additionalProps;
+  if (isTextarea) {
+    const { watch, setValue } = form || {};
+    const value = watch ? watch(name) || "" : "";
 
-  // Default type for string field
-  const type = "text";
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      if (setValue) {
+        setValue(name, e.target.value, { shouldValidate: true });
+      }
+    };
 
-  // Determine if it should be a textarea based on schema or rows prop
-  const shouldBeTextarea = isTextarea || (rows && rows > 1);
+    const {
+      rows,
+      cols,
+      autoComplete,
+      autoFocus,
+      maxLength,
+      minLength,
+      readOnly,
+      tabIndex,
+      onFocus,
+      onBlur,
+      onChange: customOnChange,
+      ...otherAdditionalProps
+    } = additionalProps;
 
-  const inputProps = {
-    id: name,
-    name,
-    value,
-    onChange: handleChange,
-    placeholder,
-    type: shouldBeTextarea ? undefined : type,
-    rows: shouldBeTextarea ? rows || 4 : undefined,
-    className: className || getBaseInputClasses(error),
-    autoComplete,
-    autoFocus,
-    maxLength,
-    minLength,
-    pattern,
-    readOnly,
-    tabIndex,
-    onFocus,
-    onBlur,
-    ...getErrorAriaAttributes(error, name),
-    ...otherAdditionalProps,
-  };
+    const textareaProps = {
+      id: name,
+      name,
+      value,
+      onChange: handleChange,
+      placeholder,
+      rows: rows || 4,
+      cols,
+      autoComplete,
+      autoFocus,
+      maxLength,
+      minLength,
+      readOnly,
+      tabIndex,
+      onFocus,
+      onBlur,
+      className: className || `${getBaseInputClasses(error)} resize-vertical`,
+      ...getErrorAriaAttributes(error, name),
+      ...otherAdditionalProps,
+    };
+
+    return (
+      <BaseInputField
+        name={name}
+        form={form}
+        schema={schema}
+        label={label}
+        description={description}
+        error={error}
+        renderInput={() => <textarea {...textareaProps} />}
+      />
+    );
+  }
 
   return (
-    <div className="space-y-1">
-      {label && (
-        <label
-          htmlFor={name}
-          className="block text-sm font-medium text-gray-700"
-        >
-          {label}
-        </label>
-      )}
-
-      {shouldBeTextarea ? (
-        <textarea {...inputProps} />
-      ) : (
-        <input {...inputProps} />
-      )}
-
-      {description && <p className="text-sm text-gray-500">{description}</p>}
-
-      <ErrorMessageComponent error={error} />
-    </div>
+    <BaseInputField
+      name={name}
+      form={form}
+      schema={schema}
+      label={label}
+      placeholder={placeholder}
+      description={description}
+      className={className}
+      error={error}
+      type="text"
+      {...additionalProps}
+    />
   );
 }
