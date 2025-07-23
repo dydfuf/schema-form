@@ -61,7 +61,8 @@ export function FieldRenderer({
       label: meta.label || fieldProps.label,
       disabled:
         meta.disabled !== undefined ? meta.disabled : fieldProps.disabled,
-      ...meta.props, // Allow any additional props from meta
+      hidden: meta.hidden !== undefined ? meta.hidden : fieldProps.hidden,
+      ...meta,
     }),
   };
 

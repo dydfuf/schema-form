@@ -27,6 +27,26 @@ export type {
   ParsedField,
   ZodTypeName,
   BaseFieldProps,
+  FieldMeta,
+  StringFieldMeta,
+  NumberFieldMeta,
+  BooleanFieldMeta,
+  DateFieldMeta,
+  ArrayFieldMeta,
+  ObjectFieldMeta,
+  EnumFieldMeta,
+  BaseFieldMeta,
+} from "./types";
+
+// Meta helper functions
+export {
+  createStringMeta,
+  createNumberMeta,
+  createBooleanMeta,
+  createDateMeta,
+  createArrayMeta,
+  createObjectMeta,
+  createEnumMeta,
 } from "./types";
 
 // Utilities

@@ -1,65 +1,90 @@
 import { z } from "zod";
-import { SchemaForm } from "../src";
+import {
+  SchemaForm,
+  createStringMeta,
+  createNumberMeta,
+  createBooleanMeta,
+} from "../src";
 
 const metaSchema = z.object({
-  username: z.string().min(3, "사용자명은 최소 3자 이상이어야 합니다").meta({
-    label: "사용자명",
-    placeholder: "사용자명을 입력하세요",
-    className: "border-2 border-blue-300 focus:border-blue-500",
-    description: "3자 이상의 고유한 사용자명을 입력하세요",
-  }),
+  username: z
+    .string()
+    .min(3, "사용자명은 최소 3자 이상이어야 합니다")
+    .meta(
+      createStringMeta({
+        label: "사용자명",
+        placeholder: "사용자명을 입력하세요",
+        className: "border-2 border-blue-300 focus:border-blue-500",
+        description: "3자 이상의 고유한 사용자명을 입력하세요",
+        variant: "text",
+      })
+    ),
 
-  email: z.string().email("올바른 이메일 형식이 아닙니다").meta({
-    label: "이메일 주소",
-    placeholder: "example@domain.com",
-    className: "border-2 border-green-300 focus:border-green-500",
-    description: "알림을 받을 이메일 주소를 입력하세요",
-  }),
+  email: z
+    .string()
+    .email("올바른 이메일 형식이 아닙니다")
+    .meta(
+      createStringMeta({
+        label: "이메일 주소",
+        placeholder: "example@domain.com",
+        className: "border-2 border-green-300 focus:border-green-500",
+        description: "알림을 받을 이메일 주소를 입력하세요",
+        variant: "email",
+      })
+    ),
 
   password: z
     .string()
     .min(8, "비밀번호는 최소 8자 이상이어야 합니다")
-    .meta({
-      label: "비밀번호",
-      placeholder: "안전한 비밀번호를 입력하세요",
-      className: "border-2 border-red-300 focus:border-red-500",
-      description: "8자 이상의 안전한 비밀번호를 설정하세요",
-      props: {
-        type: "password",
-      },
-    }),
+    .meta(
+      createStringMeta({
+        label: "비밀번호",
+        placeholder: "안전한 비밀번호를 입력하세요",
+        className: "border-2 border-red-300 focus:border-red-500",
+        description: "8자 이상의 안전한 비밀번호를 설정하세요",
+        variant: "password",
+      })
+    ),
 
   age: z
     .number()
     .min(18, "18세 이상이어야 합니다")
     .max(100, "100세 이하여야 합니다")
-    .meta({
-      label: "나이",
-      placeholder: "나이를 입력하세요",
-      className: "border-2 border-purple-300 focus:border-purple-500",
-      description: "만 나이를 입력하세요 (18-100세)",
-    }),
+    .meta(
+      createNumberMeta({
+        label: "나이",
+        placeholder: "나이를 입력하세요",
+        className: "border-2 border-purple-300 focus:border-purple-500",
+        description: "만 나이를 입력하세요 (18-100세)",
+        variant: "number",
+      })
+    ),
 
   bio: z
     .string()
     .optional()
-    .meta({
-      label: "자기소개",
-      placeholder: "간단한 자기소개를 작성해주세요",
-      className:
-        "border-2 border-yellow-300 focus:border-yellow-500 h-24 resize-none",
-      description: "선택사항: 자신을 소개하는 글을 작성해주세요",
-      props: {
-        as: "textarea",
-        rows: 3,
-      },
-    }),
+    .meta(
+      createStringMeta({
+        label: "자기소개",
+        placeholder: "간단한 자기소개를 작성해주세요",
+        className:
+          "border-2 border-yellow-300 focus:border-yellow-500 h-24 resize-none",
+        description: "선택사항: 자신을 소개하는 글을 작성해주세요",
+        variant: "textarea",
+      })
+    ),
 
-  newsletter: z.boolean().default(false).meta({
-    label: "뉴스레터 구독",
-    description: "최신 소식과 업데이트를 이메일로 받아보시겠습니까?",
-    className: "text-indigo-600 focus:ring-indigo-500",
-  }),
+  newsletter: z
+    .boolean()
+    .default(false)
+    .meta(
+      createBooleanMeta({
+        variant: "checkbox",
+        label: "뉴스레터 구독",
+        description: "최신 소식과 업데이트를 이메일로 받아보시겠습니까?",
+        className: "text-indigo-600 focus:ring-indigo-500",
+      })
+    ),
 });
 
 type MetaFormData = z.infer<typeof metaSchema>;

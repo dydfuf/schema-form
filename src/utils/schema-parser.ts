@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { $ZodTypeDef } from "zod/v4/core";
-import { ParsedField } from "../types";
+import { ParsedField, FieldMeta } from "../types";
 
 /**
  * Get the Zod type name from a schema
@@ -36,23 +36,22 @@ export function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
 }
 
 /**
- * Get meta information from a Zod schema
+ * Get meta information from a Zod schema with proper typing
  */
-export function getSchemaMeta(
-  schema: z.ZodTypeAny
-): Record<string, any> | undefined {
-  // In Zod v4, meta() method is used to retrieve metadata from globalRegistry
+export function getSchemaMeta(schema: z.ZodTypeAny): FieldMeta | undefined {
+  // Get raw meta from schema
+  let rawMeta: any;
   try {
-    const meta = (schema as any).meta?.();
-    return meta;
+    rawMeta = (schema as any).meta?.();
   } catch (error) {
     // Fallback to _def.meta for compatibility
     if ("_def" in schema && "meta" in (schema as any)._def) {
-      return (schema as any)._def.meta;
+      rawMeta = (schema as any)._def.meta;
     }
-
-    return undefined;
   }
+
+  // Return meta as-is since it should only contain UI/UX information
+  return rawMeta as FieldMeta;
 }
 
 /**
@@ -269,37 +268,55 @@ export function getFieldType(schema: z.ZodTypeAny): string {
 
   console.log({ unwrapped, typeName, meta });
 
-  // Check for meta-based field type override
-  if (meta?.fieldType) {
-    return meta.fieldType;
-  }
-
   switch (typeName) {
     case "string":
-      // Check meta for specific string field types
-      if (meta?.props?.type === "email") {
-        console.log("Returning email field type for:", meta);
-        return "email";
+      // Check meta for variant
+      if (meta?.variant) {
+        console.log(
+          "Returning variant field type:",
+          meta.variant,
+          "for:",
+          meta
+        );
+        return meta.variant;
       }
-      if (meta?.props?.type === "password") {
-        console.log("Returning password field type for:", meta);
-        return "password";
+
+      // Check schema for specific string validations
+      const stringSchema = unwrapped as z.ZodString;
+      const checks = (stringSchema as any)._def.checks || [];
+
+      for (const check of checks) {
+        if (check.kind === "email") {
+          console.log("Returning email field type for:", meta);
+          return "email";
+        }
+        if (check.kind === "url") {
+          console.log("Returning url field type for:", meta);
+          return "url";
+        }
+        if (check.kind === "datetime") {
+          console.log("Returning datetime field type for:", meta);
+          return "datetime-local";
+        }
       }
-      if (meta?.props?.type === "url") {
-        console.log("Returning url field type for:", meta);
-        return "url";
-      }
-      if (meta?.props?.as === "textarea") {
-        console.log("Returning textarea field type for:", meta);
-        return "textarea";
-      }
+
       console.log("Returning string field type for:", typeName, meta);
       return "string";
     case "number":
     case "bigint":
+      // Check meta for variant
+      if (meta?.variant) {
+        console.log("Returning number variant:", meta.variant, "for:", meta);
+        return meta.variant;
+      }
       console.log("Returning number field type for:", typeName);
       return "number";
     case "boolean":
+      // Check meta for variant
+      if (meta?.variant) {
+        console.log("Returning boolean variant:", meta.variant, "for:", meta);
+        return meta.variant;
+      }
       console.log("Returning boolean field type for:", typeName, meta);
       return "boolean";
     case "date":
