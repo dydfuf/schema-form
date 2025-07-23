@@ -11,8 +11,8 @@ This document outlines critical issues, potential bugs, and areas for improvemen
 
 ## 2. Potential Bugs
 
-- [x] **Date Field Timezone Issues**: The date field may not handle timezones correctly.
-- [ ] **Missing Form Validation in `EnumField`**: The `EnumField` lacks proper validation.
+- [ ] **Date Field Timezone Issues**: The date field may not handle timezones correctly.
+- [x] **Missing Form Validation in `EnumField`**: The `EnumField` lacks proper validation.
 - [ ] **Lingering `console.log`**: Debugging `console.log` statements remain in the code.
 
 ## 3. Improvement Suggestions
