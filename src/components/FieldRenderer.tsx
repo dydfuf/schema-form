@@ -7,6 +7,13 @@ import {
   EnumField,
   DateField,
   ObjectField,
+  LiteralField,
+  TextareaField,
+  EmailField,
+  PasswordField,
+  UrlField,
+  RecordField,
+  TupleField,
 } from "./fields";
 
 // Default field renderer map
@@ -18,6 +25,13 @@ const defaultFieldRenderers: FieldRendererMap = {
   enum: EnumField,
   array: StringField, // TODO: Implement ArrayField
   object: ObjectField,
+  literal: LiteralField,
+  textarea: TextareaField,
+  email: EmailField,
+  password: PasswordField,
+  url: UrlField,
+  record: RecordField,
+  tuple: TupleField,
 };
 
 export interface FieldRendererProps extends FieldComponentProps {
@@ -30,6 +44,7 @@ export function FieldRenderer({
   ...fieldProps
 }: FieldRendererProps) {
   const fieldType = getFieldType(schema);
+  console.log({ fieldType, fieldProps });
   const renderers = { ...defaultFieldRenderers, ...customRenderers };
   const meta = getSchemaMeta(schema);
 

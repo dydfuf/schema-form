@@ -4,7 +4,7 @@ import { SchemaForm } from "../src";
 // Define a Zod schema
 const userSchema = z.object({
   name: z.string().min(2, "이름은 최소 2글자 이상이어야 합니다"),
-  email: z.string().email("올바른 이메일 주소를 입력해주세요"),
+  email: z.email("올바른 이메일 주소를 입력해주세요"),
   age: z
     .number()
     .min(18, "18세 이상이어야 합니다")

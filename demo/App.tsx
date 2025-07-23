@@ -2,8 +2,9 @@ import { useState } from "react";
 import { BasicExample } from "../examples/basic-example";
 import { NestedExample } from "../examples/nested-example";
 import { MetaExample } from "../examples/meta-example";
+import { ExtendedFieldsExample } from "../examples/extended-fields-example";
 
-type ExampleType = "basic" | "nested" | "meta";
+type ExampleType = "basic" | "nested" | "meta" | "extended";
 
 function App() {
   const [currentExample, setCurrentExample] = useState<ExampleType>("basic");
@@ -23,6 +24,11 @@ function App() {
       title: "Meta 기능 예제",
       description: "Zod v4의 meta 기능을 사용한 커스터마이징 예제입니다.",
       component: <MetaExample />,
+    },
+    extended: {
+      title: "확장 필드 예제",
+      description: "새로 추가된 다양한 필드 타입들을 보여주는 예제입니다.",
+      component: <ExtendedFieldsExample />,
     },
   };
 

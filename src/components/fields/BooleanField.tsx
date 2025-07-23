@@ -46,7 +46,6 @@ export function BooleanField({
           {...restMetaProps}
           {...otherAdditionalProps}
         />
-
         {label && (
           <label
             htmlFor={name}
