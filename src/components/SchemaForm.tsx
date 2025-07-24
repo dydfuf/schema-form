@@ -2,6 +2,7 @@ import { SchemaFormProps, ZodSchema } from "../types";
 import { useSchemaForm, useSchemaFormSubmit } from "../hooks/useSchemaForm";
 import { parseSchema } from "../utils/schema-parser";
 import { FieldRenderer } from "./FieldRenderer";
+import { isFunction } from "es-toolkit";
 
 export function SchemaForm<T extends ZodSchema>({
   schema,
@@ -24,10 +25,9 @@ export function SchemaForm<T extends ZodSchema>({
 
   const renderSubmitButton = () => {
     if (submitButton) {
-      if (typeof submitButton === "function") {
-        return submitButton(isSubmitting, isValid);
-      }
-      return submitButton;
+      return isFunction(submitButton) 
+        ? submitButton(isSubmitting, isValid)
+        : submitButton;
     }
 
     return (
@@ -47,10 +47,9 @@ export function SchemaForm<T extends ZodSchema>({
 
   const renderResetButton = () => {
     if (resetButton) {
-      if (typeof resetButton === "function") {
-        return resetButton(form.reset);
-      }
-      return resetButton;
+      return isFunction(resetButton)
+        ? resetButton(form.reset)
+        : resetButton;
     }
 
     return (

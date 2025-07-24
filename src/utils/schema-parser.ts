@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { $ZodTypeDef } from "zod/v4/core";
-import { ParsedField, FieldMeta } from "../types";
+import { match } from "ts-pattern";
+import { isNil } from "es-toolkit";
+import { ParsedField, FieldMeta, ZodTypeName } from "../types";
 import { validateMeta } from "./meta-validation";
 
 // Cache for parsed schemas to improve performance
@@ -30,14 +32,11 @@ export function isFieldRequired(schema: z.ZodTypeAny): boolean {
 export function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
   const typeName = getZodTypeName(schema);
 
-  switch (typeName) {
-    case "optional":
-    case "nullable":
-    case "default":
-      return unwrapSchema((schema as any)._def.innerType);
-    default:
-      return schema;
-  }
+  return match(typeName)
+    .with("optional", "nullable", "default", () => 
+      unwrapSchema((schema as any)._def.innerType)
+    )
+    .otherwise(() => schema);
 }
 
 /**
@@ -56,7 +55,7 @@ export function getSchemaMeta(schema: z.ZodTypeAny): FieldMeta | undefined {
   }
 
   // If no meta found, return undefined
-  if (!rawMeta) {
+  if (isNil(rawMeta)) {
     return undefined;
   }
 
@@ -119,8 +118,8 @@ export function parseSchema(
   const fieldPath = parentPath ? `${parentPath}.${name}` : name;
   const meta = getSchemaMeta(schema);
 
-  switch (typeName) {
-    case "object": {
+  return match(typeName)
+    .with("object", () => {
       const objectSchema = unwrapped as z.ZodObject<any>;
       const shape = objectSchema.shape;
 
@@ -135,7 +134,7 @@ export function parseSchema(
         return [
           {
             name: fieldPath,
-            type: "object",
+            type: "object" as ZodTypeName,
             schema,
             required,
             nested: nestedFields,
@@ -153,9 +152,8 @@ export function parseSchema(
 
         return result;
       }
-    }
-
-    case "array": {
+    })
+    .with("array", () => {
       const arraySchema = unwrapped as z.ZodArray<any>;
       const elementSchema = arraySchema.element;
       const elementFields = parseSchema(elementSchema, "0", fieldPath);
@@ -163,82 +161,64 @@ export function parseSchema(
       return [
         {
           name: fieldPath,
-          type: "array",
+          type: "array" as ZodTypeName,
           schema,
           required,
           nested: elementFields,
           meta,
         },
       ];
-    }
-
-    case "string":
-    case "number":
-    case "boolean":
-    case "date":
-    case "bigint": {
-      return [
-        {
-          name: fieldPath,
-          type: typeName,
-          schema,
-          required,
-          meta,
-        },
-      ];
-    }
-
-    case "literal": {
-      return [
-        {
-          name: fieldPath,
-          type: "literal",
-          schema,
-          required,
-          meta,
-        },
-      ];
-    }
-
-    case "record": {
-      return [
-        {
-          name: fieldPath,
-          type: "record",
-          schema,
-          required,
-          meta,
-        },
-      ];
-    }
-
-    case "tuple": {
-      return [
-        {
-          name: fieldPath,
-          type: "tuple",
-          schema,
-          required,
-          meta,
-        },
-      ];
-    }
-
-    case "enum": {
+    })
+    .with("string", "number", "boolean", "date", "bigint", (type) => [
+      {
+        name: fieldPath,
+        type: type as ZodTypeName,
+        schema,
+        required,
+        meta,
+      },
+    ])
+    .with("literal", () => [
+      {
+        name: fieldPath,
+        type: "literal" as ZodTypeName,
+        schema,
+        required,
+        meta,
+      },
+    ])
+    .with("record", () => [
+      {
+        name: fieldPath,
+        type: "record" as ZodTypeName,
+        schema,
+        required,
+        meta,
+      },
+    ])
+    .with("tuple", () => [
+      {
+        name: fieldPath,
+        type: "tuple" as ZodTypeName,
+        schema,
+        required,
+        meta,
+      },
+    ])
+    .with("enum", () => {
       const options = getEnumOptions(schema);
       return [
         {
           name: fieldPath,
-          type: "enum",
+          type: "enum" as ZodTypeName,
           schema,
           required,
           options,
           meta,
         },
       ];
-    }
-
-    case "union": {
+    })
+    .with("union", () => {
       const unionSchema = unwrapped as z.ZodUnion<any>;
       const options = unionSchema.options;
 
@@ -256,7 +236,7 @@ export function parseSchema(
         return [
           {
             name: fieldPath,
-            type: "enum",
+            type: "enum" as ZodTypeName,
             schema,
             required,
             options: unionOptions,
@@ -269,20 +249,19 @@ export function parseSchema(
       return [
         {
           name: fieldPath,
-          type: "string",
+          type: "string" as ZodTypeName,
           schema,
           required,
           meta,
         },
       ];
-    }
-
-    default: {
+    })
+    .otherwise(() => {
       // Fallback to string for unsupported types
       const result = [
         {
           name: fieldPath,
-          type: "string" as const,
+          type: "string" as ZodTypeName,
           schema,
           required,
           meta,
@@ -295,18 +274,8 @@ export function parseSchema(
       }
 
       return result;
-    }
-  }
+    });
 
-  // This should not be reached, but we need to handle the end of the function
-  const result: ParsedField[] = [];
-
-  // Cache the result for root schema
-  if (!name && !parentPath) {
-    schemaParseCache.set(schema, result);
-  }
-
-  return result;
 }
 
 /**
@@ -317,8 +286,8 @@ export function getFieldType(schema: z.ZodTypeAny): string {
   const typeName = getZodTypeName(unwrapped);
   const meta = getSchemaMeta(schema);
 
-  switch (typeName) {
-    case "string":
+  return match(typeName)
+    .with("string", () => {
       // Check meta for variant
       if (meta?.variant) {
         return meta.variant;
@@ -341,43 +310,37 @@ export function getFieldType(schema: z.ZodTypeAny): string {
       }
 
       return "string";
-    case "number":
-    case "bigint":
+    })
+    .with("number", "bigint", () => {
       // Check meta for variant
       if (meta?.variant) {
         return meta.variant;
       }
       return "number";
-    case "boolean":
+    })
+    .with("boolean", () => {
       // Check meta for variant
       if (meta?.variant) {
         return meta.variant;
       }
       return "boolean";
-    case "date":
-      return "date";
-    case "array":
-      return "array";
-    case "object":
-      return "object";
-    case "enum":
-      return "enum";
-    case "literal":
-      return "literal";
-    case "record":
-      return "record";
-    case "tuple":
-      return "tuple";
-    case "union":
+    })
+    .with("date", () => "date")
+    .with("array", () => "array")
+    .with("object", () => "object")
+    .with("enum", () => "enum")
+    .with("literal", () => "literal")
+    .with("record", () => "record")
+    .with("tuple", () => "tuple")
+    .with("union", () => {
       // Check if it's a simple string union
       const unionSchema = unwrapped as z.ZodUnion<any>;
       const isStringUnion = unionSchema.options.every(
         (option: z.ZodTypeAny) => getZodTypeName(option) === "literal"
       );
       return isStringUnion ? "enum" : "string";
-    default:
-      return "string";
-  }
+    })
+    .otherwise(() => "string");
 }
 
 /**

@@ -6,6 +6,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo, useCallback } from "react";
+import { isUndefined } from "es-toolkit";
 import { ZodSchema, InferredType, UseSchemaFormReturn } from "../types";
 import { parseSchema, getDefaultValue } from "../utils/schema-parser";
 
@@ -35,7 +36,7 @@ export function useSchemaForm<T extends ZodSchema>({
 
     parsedFields.forEach((field) => {
       const defaultValue = getDefaultValue(field.schema);
-      if (defaultValue !== undefined) {
+      if (!isUndefined(defaultValue)) {
         // Handle nested field paths (e.g., "user.name")
         const keys = field.name.split(".");
         let current = defaults;

@@ -2,7 +2,9 @@ import { FieldComponentProps, FieldAdditionalProps } from "../../types";
 import { FieldRenderer } from "../FieldRenderer";
 import { z } from "zod";
 import { useFieldArray } from "react-hook-form";
+import { match } from "ts-pattern";
 import { ErrorMessageComponent } from "../../utils/error-handling";
+import { unwrapSchema, getZodTypeName } from "../../utils/schema-parser";
 
 export function ArrayField({
   name,
@@ -23,12 +25,7 @@ export function ArrayField({
   });
 
   // Parse the array schema to get the element type
-  const unwrappedSchema =
-    schema instanceof z.ZodOptional ||
-    schema instanceof z.ZodNullable ||
-    schema instanceof z.ZodDefault
-      ? (schema as any)._def.innerType
-      : schema;
+  const unwrappedSchema = unwrapSchema(schema);
 
   if (!(unwrappedSchema instanceof z.ZodArray)) {
     return (
@@ -49,19 +46,17 @@ export function ArrayField({
 
   const handleAddItem = () => {
     // Add a default value based on the element schema type
-    let defaultValue: any = "";
-
-    if (elementSchema instanceof z.ZodString) {
-      defaultValue = "";
-    } else if (elementSchema instanceof z.ZodNumber) {
-      defaultValue = 0;
-    } else if (elementSchema instanceof z.ZodBoolean) {
-      defaultValue = false;
-    } else if (elementSchema instanceof z.ZodObject) {
-      defaultValue = {};
-    } else if (elementSchema instanceof z.ZodArray) {
-      defaultValue = [];
-    }
+    const unwrappedElement = unwrapSchema(elementSchema as z.ZodTypeAny);
+    const typeName = getZodTypeName(unwrappedElement);
+    
+    const defaultValue = match(typeName)
+      .with("string", () => "")
+      .with("number", "bigint", () => 0)
+      .with("boolean", () => false)
+      .with("object", () => ({}))
+      .with("array", () => [])
+      .with("date", () => new Date())
+      .otherwise(() => "");
 
     append(defaultValue);
   };

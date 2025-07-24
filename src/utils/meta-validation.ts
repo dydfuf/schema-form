@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { match } from "ts-pattern";
+import { isNil } from "es-toolkit";
 import {
   StringFieldMeta,
   NumberFieldMeta,
@@ -107,7 +109,7 @@ export function validateMeta(
   };
 
   // If meta is undefined or null, it's valid (optional)
-  if (meta === undefined || meta === null) {
+  if (isNil(meta)) {
     return result;
   }
 
@@ -122,38 +124,19 @@ export function validateMeta(
   const unwrapped = unwrapSchema(fieldSchema);
   const typeName = getZodTypeName(unwrapped);
 
-  let validationSchema: z.ZodSchema;
-
-  switch (typeName) {
-    case "string":
-      validationSchema = stringFieldMetaSchema;
-      break;
-    case "number":
-    case "bigint":
-      validationSchema = numberFieldMetaSchema;
-      break;
-    case "boolean":
-      validationSchema = booleanFieldMetaSchema;
-      break;
-    case "date":
-      validationSchema = dateFieldMetaSchema;
-      break;
-    case "array":
-      validationSchema = arrayFieldMetaSchema;
-      break;
-    case "object":
-      validationSchema = objectFieldMetaSchema;
-      break;
-    case "enum":
-    case "union":
-      validationSchema = enumFieldMetaSchema;
-      break;
-    default:
+  const validationSchema = match(typeName)
+    .with("string", () => stringFieldMetaSchema)
+    .with("number", "bigint", () => numberFieldMetaSchema)
+    .with("boolean", () => booleanFieldMetaSchema)
+    .with("date", () => dateFieldMetaSchema)
+    .with("array", () => arrayFieldMetaSchema)
+    .with("object", () => objectFieldMetaSchema)
+    .with("enum", "union", () => enumFieldMetaSchema)
+    .otherwise(() => {
       // For unknown types, use base meta schema
-      validationSchema = baseFieldMetaSchema;
       result.warnings.push(`Unknown field type '${typeName}', using base meta validation`);
-      break;
-  }
+      return baseFieldMetaSchema;
+    });
 
   // Validate meta against the schema
   const validationResult = validationSchema.safeParse(meta);
@@ -178,7 +161,7 @@ export function validateStringMeta(meta: unknown): MetaValidationResult {
     warnings: [],
   };
 
-  if (meta === undefined || meta === null) {
+  if (isNil(meta)) {
     return result;
   }
 
@@ -200,7 +183,7 @@ export function validateNumberMeta(meta: unknown): MetaValidationResult {
     warnings: [],
   };
 
-  if (meta === undefined || meta === null) {
+  if (isNil(meta)) {
     return result;
   }
 
@@ -222,7 +205,7 @@ export function validateBooleanMeta(meta: unknown): MetaValidationResult {
     warnings: [],
   };
 
-  if (meta === undefined || meta === null) {
+  if (isNil(meta)) {
     return result;
   }
 
@@ -244,7 +227,7 @@ export function validateDateMeta(meta: unknown): MetaValidationResult {
     warnings: [],
   };
 
-  if (meta === undefined || meta === null) {
+  if (isNil(meta)) {
     return result;
   }
 
@@ -266,7 +249,7 @@ export function validateArrayMeta(meta: unknown): MetaValidationResult {
     warnings: [],
   };
 
-  if (meta === undefined || meta === null) {
+  if (isNil(meta)) {
     return result;
   }
 
@@ -288,7 +271,7 @@ export function validateObjectMeta(meta: unknown): MetaValidationResult {
     warnings: [],
   };
 
-  if (meta === undefined || meta === null) {
+  if (isNil(meta)) {
     return result;
   }
 
@@ -310,7 +293,7 @@ export function validateEnumMeta(meta: unknown): MetaValidationResult {
     warnings: [],
   };
 
-  if (meta === undefined || meta === null) {
+  if (isNil(meta)) {
     return result;
   }
 
